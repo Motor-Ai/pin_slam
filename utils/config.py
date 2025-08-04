@@ -323,6 +323,10 @@ class Config:
             self.name = config_args["setting"].get("name", "pin_slam")
             
             self.use_dataloader = config_args["setting"].get("use_kiss_icp_dataloader", False)
+            
+            data_loader_name = config_args['setting'].get('data_loader_name', None)
+            if data_loader_name is not None:
+                self.data_loader_name = data_loader_name
 
             self.output_root = config_args["setting"].get("output_root", "./experiments")
             self.pc_path = config_args["setting"].get("pc_path", "") 
@@ -360,6 +364,9 @@ class Config:
             self.stop_frame_thre = config_args["setting"].get("stop_frame_thre", self.stop_frame_thre)
 
             self.deskew = config_args["setting"].get("deskew", self.deskew) # apply motion undistortion or not
+
+        if "data_loader_seq" in config_args:
+            self.data_loader_seq = config_args['data_loader_seq']
 
         # process
         if "process" in config_args:

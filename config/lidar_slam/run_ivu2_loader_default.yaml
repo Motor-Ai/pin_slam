@@ -1,0 +1,56 @@
+# run with -d flag!
+setting:
+  name: "loader_ivu_default"
+  output_root: "./runs"
+  pc_path: "/home/thomas/Downloads/uber_arena/frames"
+  data_loader_name: mai
+  end_frame: 500
+data_loader_seq: 
+  lidar_calib_file: "/home/thomas/Downloads/exp_data_collection_test/calibration/lidars.yaml"
+  pc_filenames: ['ivu2'] 
+  color_channel: null
+  guessing: default
+process:
+  min_range_m: 3.0
+  max_range_m: 80.0
+  vox_down_m: 0.08
+  min_z_m: -3.5
+sampler:
+  surface_sample_range_m: 0.25 
+  surface_sample_n: 3
+  free_sample_begin_ratio: 0.3
+  free_sample_end_dist_m: 1.0
+  free_front_sample_n: 2
+neuralpoints:
+  voxel_size_m: 0.4
+  feature_dim: 8 
+  query_nn_k: 6
+  search_alpha: 0.2
+  weighted_first: False
+decoder:
+  freeze_after_frame: 40
+loss:
+  main_loss_type: bce
+  sigma_sigmoid_m: 0.08
+  loss_weight_on: True
+  dist_weight_scale: 0.8
+  ekional_loss_on: True
+  weight_e: 0.5
+continual:
+  batch_size_new_sample: 4000
+  pool_capacity: 2e7
+tracker:
+  source_vox_down_m: 0.6
+  iter_n: 100
+  GM_grad: 0.1 
+  GM_dist: 0.2 
+pgo:
+  pgo_freq_frame: 20
+  context_cosdist: 0.3
+optimizer: # mapper
+  batch_size: 16384
+eval:
+  o3d_vis_on: False # visualize the mapping or not
+  silence_log: True # output the logs or not
+  mesh_freq_frame: 20 # reconstruct the mesh every x frames
+  mesh_min_nn: 9

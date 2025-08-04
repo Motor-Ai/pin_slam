@@ -33,6 +33,7 @@ from utils.tools import (
     transform_torch,
     voxel_down_sample_torch,
 )
+from .utils.data_io import point_cloud_features
 
 class SLAMDataset(Dataset):
     def __init__(self, config: Config) -> None:
@@ -369,16 +370,20 @@ class SLAMDataset(Dataset):
             self.travel_dist[frame_id] = 0.0
             self.last_pose_ref = self.cur_pose_ref
         elif frame_id > 0:
-            # pose initial guess
-            # last_translation = np.linalg.norm(self.last_odom_tran[:3, 3])
-            if self.config.uniform_motion_on and not self.lose_track: 
-            # if self.config.uniform_motion_on:   
-                # apply uniform motion model here
-                cur_pose_init_guess = (
-                    self.last_pose_ref @ self.last_odom_tran
-                )  # T_world<-cur = T_world<-last @ T_last<-cur
-            else:  # static initial guess
-                cur_pose_init_guess = self.last_pose_ref
+            if self.config.use_dataloader and hasattr(self.loader, 'initial_guess'):
+                frame_id_in_folder = self.config.begin_frame + frame_id * self.config.step_frame
+                cur_pose_init_guess = self.loader.initial_guess(frame_id_in_folder, self.last_pose_ref, self.last_odom_tran)
+            else:
+                # pose initial guess
+                # last_translation = np.linalg.norm(self.last_odom_tran[:3, 3])
+                if self.config.uniform_motion_on and not self.lose_track: 
+                # if self.config.uniform_motion_on:   
+                    # apply uniform motion model here
+                    cur_pose_init_guess = (
+                        self.last_pose_ref @ self.last_odom_tran
+                    )  # T_world<-cur = T_world<-last @ T_last<-cur
+                else:  # static initial guess
+                    cur_pose_init_guess = self.last_pose_ref
 
             if not self.config.track_on and self.gt_pose_provided:
                 cur_pose_init_guess = self.gt_poses[frame_id]
@@ -1034,7 +1039,7 @@ def read_point_cloud(
         
     elif ".pcd" in filename:  # currently cannot be readed by o3d.t.io
         pc_load = o3d.io.read_point_cloud(filename)
-        points = np.asarray(pc_load.points, dtype=np.float64)
+        points = point_cloud_features(pc_load, color_channel)
         ts = None
     elif ".las" in filename:  # use laspy
         import laspy
