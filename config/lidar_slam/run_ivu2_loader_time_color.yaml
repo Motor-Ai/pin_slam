@@ -14,8 +14,8 @@ setting:
   #end_frame: 1000
 
   ##part3:
-  begin_frame: 999
-  end_frame: 10000
+  #begin_frame: 999
+  #end_frame: 10000
   color_channel: 1
   color_map_on: True
 data_loader_seq: 
