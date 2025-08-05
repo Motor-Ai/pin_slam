@@ -85,8 +85,8 @@ class MAIDataset:
             self.kf.predict(t1-t0)
             self.kf.update(last_odom_tran)
             last_odom_tran_new = self.kf.predict_future_pose(t2-t1)
-        print('guess: [%.3f %.3f %.3f]' % tuple(last_odom_tran[:3, 3]))
-        print('time guess: [%.3f %.3f %.3f]' % tuple(last_odom_tran_new[:3, 3]))
+        #print('guess: [%.3f %.3f %.3f]' % tuple(last_odom_tran[:3, 3]))
+        #print('time guess: [%.3f %.3f %.3f]' % tuple(last_odom_tran_new[:3, 3]))
         return last_pose_ref @ last_odom_tran_new # T_world<-cur = T_world<-last @ T_last<-cur
     
 

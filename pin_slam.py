@@ -87,6 +87,8 @@ def run_pin_slam(
     sequence_name: Optional[str] = typer.Argument(None, help='Name of a specific data sequence or the rostopic for point cloud (when -d is set)'),
     input_path: Optional[str] = typer.Option(None, '--input-path', '-i', help='Path to the point cloud input directory, this will overwrite the config file pc_path'),
     output_path: Optional[str] = typer.Option(None, '--output-path', '-o', help='Path to the result output directory, this will overwrite the config file output_root'),
+    lidar_calib_path: Optional[str] = typer.Option(None, '--lidar-calib-path', help='Path to the lidar calibration yaml file, this will overwrite the config file data_loader_seq->lidar_calib_file'),
+    pc_names: Optional[str] = typer.Option(None, '--pc_names', help='pc names, e.g. "ivu2", currently only 1 pc name is supported, this will overwrite the config file data_loader_seq->pc_names'),
     frame_range: Optional[Tuple[int, int, int]] = typer.Option(None, '--range', help='Specify the start, end and step of the processed frame, e.g. --range 10 1000 1'),
     seed: int = typer.Option(42, help='Set the random seed'),
     data_loader_on: bool = typer.Option(False, '--data-loader-on', '-d', help='Use a specific data loader'),
@@ -124,6 +126,12 @@ def run_pin_slam(
         
     if output_path:
         config.output_root = output_path
+
+    if lidar_calib_path:
+        config.data_loader_seq['lidar_calib_file'] = lidar_calib_path
+
+    if pc_names:
+        config.data_loader_seq['pc_filenames'] = [pc_names]
         
     if dataset_name:
         set_dataset_path(config, dataset_name, sequence_name)

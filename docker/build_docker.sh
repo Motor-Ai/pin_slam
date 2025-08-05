@@ -2,6 +2,6 @@
 
 echo "Build docker"
 
-sudo docker build -f cu117.Dockerfile -t pinslam:localbuild .
+sudo docker build -f cu122.Dockerfile -t pinslam:localbuild .
 
 echo "docker successfully build!"
