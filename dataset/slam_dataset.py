@@ -33,7 +33,8 @@ from utils.tools import (
     transform_torch,
     voxel_down_sample_torch,
 )
-from .utils.data_io import point_cloud_features
+from .utils.data_io import point_cloud_features, matrix_to_pq
+import yaml
 
 class SLAMDataset(Dataset):
     def __init__(self, config: Config) -> None:
@@ -691,6 +692,7 @@ class SLAMDataset(Dataset):
             write_kitti_format_poses(os.path.join(self.run_path, "odom_poses"), odom_poses_out)
             write_tum_format_poses(os.path.join(self.run_path, "odom_poses"), odom_poses_out, self.poses_ts, 0.1*self.config.step_frame)
             write_traj_as_o3d(odom_poses, os.path.join(self.run_path, "odom_poses.ply"))
+            write_traj_as_yaml(odom_poses, os.path.join(self.run_path, "odom_poses.yaml"))
 
             if self.config.pgo_on:
                 pgo_poses = self.pgo_poses[:self.processed_frame+1]
@@ -702,6 +704,7 @@ class SLAMDataset(Dataset):
                     os.path.join(self.run_path, "slam_poses"), slam_poses_out, self.poses_ts, 0.1*self.config.step_frame
                 )
                 write_traj_as_o3d(pgo_poses, os.path.join(self.run_path, "slam_poses.ply"))
+                write_traj_as_yaml(pgo_poses, os.path.join(self.run_path, "slam_poses.yaml"))
         
         # timing report
         time_table = np.array(self.time_table)
@@ -1315,3 +1318,17 @@ def write_traj_as_o3d(poses_np, path):
         o3d.io.write_point_cloud(path, o3d_pcd)
 
     return o3d_pcd
+
+def write_traj_as_yaml(transformations, output_path):
+    ego_poses = []
+    for transform in transformations:
+        t, quad = matrix_to_pq(transform)
+        item = dict(
+            heading=dict(zip(['qx','qy','qz','qw'], quad.as_quat().tolist())),   # qx, qy, qz, qw
+            position=dict(zip(['x','y','z'], t.tolist())),                        # x, y, z
+        )
+        ego_poses.append(item)
+    output_data = dict(ego_poses=ego_poses)
+    with open(output_path, 'w') as f:
+        yaml.dump(output_data, f)
+    print(f"{output_path} saved.")
