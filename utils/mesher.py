@@ -517,6 +517,7 @@ class Mesher:
         filter_free_space_vertices=True,
         mesh_min_nn=10,
         use_torch_mc=False,
+        transformation=None,
     ):
         """
         Reconstruct the mesh from a collection of bounding boxes
@@ -544,6 +545,9 @@ class Mesher:
             remove_gpu_cache() # deal with high GPU memory consumption when meshing (TODO)
 
         mesh_merged.remove_duplicated_vertices()
+
+        if transformation is not None:
+            mesh_merged = mesh_merged.transform(transformation)
 
         if mesh_normal:
             mesh_merged.compute_vertex_normals()

@@ -15,17 +15,23 @@ class MAIDataset:
         # find folders
         dirnames, _ = get_dirs(root_frames)
         print('number of frames:', len(dirnames))
-        self.gps_imu_data = GPSIMUData()
-        self.gps_imu_data.load(dirnames)
-        print('gps & imu loaded')
         self.pc_loader = PointCloudsLoader(pc_filenames, lidar_calib_file, dirnames=dirnames)
         print('pc loader ready')
-        self.actual_timestamps = dict()
 
+        # transformation to base frame needs to be done after SLAM!
+        assert len(self.pc_loader.pc_names) == 1, 'only one sensor supported so far'
+        calib = self.pc_loader.extrinsics[self.pc_loader.pc_names[0]]
+        self.calibration = dict(Tr=calib[:3,:4]) # is used in slam_dataset.py at the end
+        self.pc_loader.extrinsics = None  # transformations disabled
+        
+        self.actual_timestamps = dict()
         if guessing == 'default':
             self.initial_guess = self.initial_guess_default
         elif guessing == 'gps':
             self.initial_guess = self.initial_guess_gps
+            self.gps_imu_data = GPSIMUData()
+            self.gps_imu_data.load(dirnames)
+            print('gps & imu loaded')
             self.gps_interp = PoseInterpolation2D(self.gps_imu_data.timestamps, self.gps_imu_data.gps_xy, self.gps_imu_data.gps_yaw)
         elif guessing == 'time':
             self.initial_guess = self.initial_guess_time

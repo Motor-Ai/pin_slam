@@ -114,7 +114,7 @@ class SLAMDataset(Dataset):
                 
                 # apply calibration
                 # actually from camera frame to LiDAR frame, lidar pose in world frame
-                self.gt_poses = apply_kitti_format_calib(poses_uncalib, inv(self.calib["Tr"]))
+                self.gt_poses = apply_kitti_format_calib(poses_uncalib, inv(self.calib_transform))
                     
                 # pose in the reference frame (might be the first frame used)
                 if config.first_frame_ref:
@@ -683,28 +683,32 @@ class SLAMDataset(Dataset):
             pgo_poses = self.pgo_poses[:self.processed_frame+1]
         
         return odom_poses, gt_poses, pgo_poses
+    
+    @property
+    def calib_transform(self):
+        return self.calib["Tr"]
 
     def write_results(self):
         
         if self.config.track_on:
             odom_poses = self.odom_poses[:self.processed_frame+1]
-            odom_poses_out = apply_kitti_format_calib(odom_poses, self.calib["Tr"])
+            odom_poses_out = apply_kitti_format_calib(odom_poses, self.calib_transform)
             write_kitti_format_poses(os.path.join(self.run_path, "odom_poses"), odom_poses_out)
             write_tum_format_poses(os.path.join(self.run_path, "odom_poses"), odom_poses_out, self.poses_ts, 0.1*self.config.step_frame)
-            write_traj_as_o3d(odom_poses, os.path.join(self.run_path, "odom_poses.ply"))
-            write_traj_as_yaml(odom_poses, os.path.join(self.run_path, "odom_poses.yaml"))
+            write_traj_as_o3d(odom_poses_out, os.path.join(self.run_path, "odom_poses.ply"))
+            write_traj_as_yaml(odom_poses_out, os.path.join(self.run_path, "odom_poses.yaml"))
 
             if self.config.pgo_on:
                 pgo_poses = self.pgo_poses[:self.processed_frame+1]
-                slam_poses_out = apply_kitti_format_calib(pgo_poses, self.calib["Tr"])
+                slam_poses_out = apply_kitti_format_calib(pgo_poses, self.calib_transform)
                 write_kitti_format_poses(
                     os.path.join(self.run_path, "slam_poses"), slam_poses_out
                 )
                 write_tum_format_poses(
                     os.path.join(self.run_path, "slam_poses"), slam_poses_out, self.poses_ts, 0.1*self.config.step_frame
                 )
-                write_traj_as_o3d(pgo_poses, os.path.join(self.run_path, "slam_poses.ply"))
-                write_traj_as_yaml(pgo_poses, os.path.join(self.run_path, "slam_poses.yaml"))
+                write_traj_as_o3d(slam_poses_out, os.path.join(self.run_path, "slam_poses.ply"))
+                write_traj_as_yaml(slam_poses_out, os.path.join(self.run_path, "slam_poses.yaml"))
         
         # timing report
         time_table = np.array(self.time_table)

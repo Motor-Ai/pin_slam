@@ -17,6 +17,7 @@ import wandb
 from rich import print
 from tqdm import tqdm
 from typing import Optional, Tuple
+from copy import deepcopy
 
 from dataset.dataset_indexing import set_dataset_path
 from dataset.slam_dataset import SLAMDataset
@@ -530,7 +531,8 @@ def run_pin_slam(
 
     neural_pcd = neural_points.get_neural_points_o3d(query_global=True, color_mode = 0)
     if config.save_map:
-        o3d.io.write_point_cloud(os.path.join(run_path, "map", "neural_points.ply"), neural_pcd) # write the neural point cloud
+        neural_pcd_transformed = deepcopy(neural_pcd).transform(dataset.calib_transform)
+        o3d.io.write_point_cloud(os.path.join(run_path, "map", "neural_points.ply"), neural_pcd_transformed) # write the neural point cloud
     
     output_mc_res_m = config.mc_res_m*0.6
     mc_cm_str = str(round(output_mc_res_m*1e2))
@@ -538,7 +540,7 @@ def run_pin_slam(
         chunks_aabb = split_chunks(neural_pcd, neural_pcd.get_axis_aligned_bounding_box(), output_mc_res_m * 200) # reconstruct in chunks
         mesh_path = os.path.join(run_path, "mesh", "mesh_" + mc_cm_str + "cm.ply")
         print("Reconstructing the global mesh with resolution {} cm".format(mc_cm_str))
-        cur_mesh = mesher.recon_aabb_collections_mesh(chunks_aabb, output_mc_res_m, mesh_path, False, config.semantic_on, config.color_on, filter_isolated_mesh=True, mesh_min_nn=config.mesh_min_nn)
+        cur_mesh = mesher.recon_aabb_collections_mesh(chunks_aabb, output_mc_res_m, mesh_path, False, config.semantic_on, config.color_on, filter_isolated_mesh=True, mesh_min_nn=config.mesh_min_nn, transformation=dataset.calib_transform)
         print("Reconstructing the global mesh done")
     neural_points.clear_temp() # clear temp data for output
     if config.save_map:
