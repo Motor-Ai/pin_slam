@@ -64,14 +64,9 @@ def concatenate_point_clouds(pcs):
             combined += pc
         return combined
 
-class PointCloudsLoader:
-    pre_load = False
-
-    def __init__(self, pc_names, extrinsics_file=None, metadata_filename='reconstruction_metadata.json', dirnames=None):
-        self.pc_names = pc_names
-        self.extrinsics = self.load_config(extrinsics_file) if extrinsics_file is not None else None
-        self.metadata_filename = metadata_filename
-        self.dirnames = dirnames
+class LidarExtrinsics:
+    def __init__(self, extrinsics_file):
+        self.extrinsics = self.load_config(extrinsics_file)
 
     @staticmethod
     def load_config(yaml_path):
@@ -107,6 +102,19 @@ class PointCloudsLoader:
             result[file_name] = T
 
         return result
+    
+    def __getitem__(self, name):
+        return self.extrinsics[name]
+    
+
+class PointCloudsLoader:
+    pre_load = False
+
+    def __init__(self, pc_names, extrinsics_file=None, metadata_filename='reconstruction_metadata.json', dirnames=None):
+        self.pc_names = pc_names
+        self.extrinsics = LidarExtrinsics(extrinsics_file) if extrinsics_file is not None else None
+        self.metadata_filename = metadata_filename
+        self.dirnames = dirnames
         
     def __call__(self, dir_path):
         # get individuel timestamps

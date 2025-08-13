@@ -56,7 +56,7 @@ def vis_pin_map(
 
     config = Config()
 
-    yaml_files = glob.glob(f"{result_folder}/*.yaml")
+    yaml_files = glob.glob(f"{result_folder}/run_*.yaml")
     if len(yaml_files) > 1: # Check if there is exactly one YAML file
         sys.exit("There are multiple YAML files. Please handle accordingly.")
     elif len(yaml_files) == 0:  # If no YAML files are found

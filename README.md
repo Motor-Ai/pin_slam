@@ -26,9 +26,12 @@
   <p align="center"><a href="https://www.ipb.uni-bonn.de"><strong>University of Bonn</strong></a>
   <h3 align="center"><a href="https://www.ipb.uni-bonn.de/wp-content/papercite-data/pdf/pan2024tro.pdf">Paper</a> | <a href="https://www.youtube.com/watch?v=jwuAkIwb2X8">Video</a></h3>
   <div align="center"></div>
+  <p align="center"> <a href="https://motor-ai.atlassian.net/wiki/spaces/PL/pages/427032660/PIN+SLAM"><strong>Motor-Ai Documentation</strong></a></p>
 </p>
 
 **TL;DR: PIN-SLAM is a full-fledged implicit neural LiDAR SLAM system including odometry, loop closure detection, and globally consistent mapping**
+
+
 
 
 ![pin_slam_teaser](https://github.com/PRBonn/PIN_SLAM/assets/34207278/b5ab4c89-cdbe-464e-afbe-eb432b42fccc)
